@@ -19,6 +19,7 @@ export default function ProductForm({ product, categories = [] }: { product?: an
     const router = useRouter()
     const [loading, setLoading] = useState(false)
     const submitLock = useRef(false)
+    const productImageFileInputRef = useRef<HTMLInputElement | null>(null)
     const [currentProduct, setCurrentProduct] = useState(product)
     const [formSeed, setFormSeed] = useState(0)
     // Only show warning section if purchaseWarning has actual content
@@ -255,13 +256,24 @@ export default function ProductForm({ product, categories = [] }: { product?: an
                         )}
                         <div className="flex flex-col gap-2 rounded-lg border border-dashed border-border/60 bg-muted/20 p-3">
                             <Label htmlFor="product-image-file" className="text-sm font-medium">{t('admin.productForm.imageUpload')}</Label>
-                            <Input
+                            <input
+                                ref={productImageFileInputRef}
                                 id="product-image-file"
                                 type="file"
+                                className="hidden"
                                 accept="image/png,image/jpeg,image/webp,image/gif,image/svg+xml,image/x-icon,image/bmp,.png,.jpg,.jpeg,.webp,.gif,.svg,.ico,.bmp"
                                 onChange={handleSelectProductImageFile}
                                 disabled={processingProductImageFile}
                             />
+                            <Button
+                                type="button"
+                                variant="outline"
+                                className="w-fit"
+                                onClick={() => productImageFileInputRef.current?.click()}
+                                disabled={processingProductImageFile}
+                            >
+                                {processingProductImageFile ? t('common.processing') : t('admin.productForm.imageUpload')}
+                            </Button>
                             <p className="text-xs text-muted-foreground">{t('admin.productForm.imageUploadHint')}</p>
                         </div>
                         {productImageValue && (

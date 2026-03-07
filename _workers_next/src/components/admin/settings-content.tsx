@@ -1,6 +1,6 @@
 'use client'
 
-import { type ChangeEvent, useState } from "react"
+import { type ChangeEvent, useRef, useState } from "react"
 import { useI18n } from "@/lib/i18n/context"
 import { prepareUploadedImage } from "@/lib/client-image"
 import Link from "next/link"
@@ -64,6 +64,7 @@ const SHOP_LOGO_UPLOAD_MAX_BYTES = 500 * 1024
 
 export function AdminSettingsContent({ stats, shopName, shopDescription, shopLogo, shopFooter, themeColor, visitorCount, lowStockThreshold, checkinReward, checkinEnabled, wishlistEnabled, noIndexEnabled, refundReclaimCards, registryHideNav, registryOptIn, registryEnabled, currentVersion }: AdminSettingsContentProps) {
     const { t } = useI18n()
+    const shopLogoFileInputRef = useRef<HTMLInputElement | null>(null)
 
     // State
     const [shopNameValue, setShopNameValue] = useState(shopName || '')
@@ -462,13 +463,24 @@ export function AdminSettingsContent({ stats, shopName, shopDescription, shopLog
                         )}
                         <div className="flex flex-col gap-2 rounded-lg border border-dashed border-border/60 bg-muted/20 p-3">
                             <Label htmlFor="shop-logo-file" className="text-sm font-medium">{t('admin.settings.shopLogoUpload')}</Label>
-                            <Input
+                            <input
+                                ref={shopLogoFileInputRef}
                                 id="shop-logo-file"
                                 type="file"
+                                className="hidden"
                                 accept="image/png,image/jpeg,image/webp,image/gif,image/svg+xml,image/x-icon,image/bmp,.png,.jpg,.jpeg,.webp,.gif,.svg,.ico,.bmp"
                                 onChange={handleSelectShopLogoFile}
                                 disabled={processingShopLogoFile}
                             />
+                            <Button
+                                type="button"
+                                variant="outline"
+                                className="w-fit"
+                                onClick={() => shopLogoFileInputRef.current?.click()}
+                                disabled={processingShopLogoFile}
+                            >
+                                {processingShopLogoFile ? t('common.processing') : t('admin.settings.shopLogoUpload')}
+                            </Button>
                             <p className="text-xs text-muted-foreground">{t('admin.settings.shopLogoUploadHint')}</p>
                         </div>
                         {shopLogoValue && (
