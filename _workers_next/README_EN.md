@@ -23,14 +23,16 @@ This architecture aims to combine the development efficiency of Next.js with the
 
 ## ✨ Features
 
-- **Modern Stack**: Next.js 15 (App Router), Tailwind CSS, TypeScript.
+- **Modern Stack**: Next.js 16 (App Router), Tailwind CSS, TypeScript.
 - **Edge Native**: Cloudflare Workers + D1 Database, low cost and high performance.
 - **Linux DO Integration**: Built-in OIDC login and EasyPay payments.
 - **Storefront Experience**:
-    - 🔍 **Search & Categories**: Client-side search and category filters.
+    - 🔍 **Search & Categories**: Client-side search and category filters; dedicated **search page** `/search` with server-side search, pagination, category and sort.
+    - 💡 **Wishlist & Voting**: Users can submit and vote for desired products (admin can enable/disable).
     - 📢 **Announcement Banner**: Configurable homepage announcements.
     - 📝 **Markdown Descriptions**: Rich product descriptions.
     - ⚠️ **Purchase Warning**: Optional pre-purchase warning modal.
+    - 🔒 **Product Visibility**: Products can be restricted by user trust level (0–3); users below the level see a “login or upgrade” message.
     - 🔥 **Hot & Discounts**: Hot tag and original/discount price display.
     - ⭐ **Ratings & Reviews**: Verified buyers can rate and review.
     - 📦 **Stock & Sold Counters**: Real-time inventory and sales display.
@@ -38,13 +40,15 @@ This architecture aims to combine the development efficiency of Next.js with the
     - 🚫 **Purchase Limits**: Limit purchases by paid order count.
     - 🔢 **Quantity Selection**: Support purchasing multiple items.
     - 🏷️ **Custom Store Name**: Configurable store name in header/title.
+    - 📐 **Product Variants**: Multiple variants per product (e.g. monthly/yearly) with separate price and stock; homepage shows price range and variant count; detail page variant selector; admin and user order records show variant label; card keys are managed per variant (per product).
 - **Orders & Delivery**:
     - ✅ **Payment Callback Verification**: Signature and amount checks.
     - 🎁 **Auto Delivery**: Card key delivery on payment; paid status retained if out of stock.
     - 📦 **Multi-Card Delivery**: Display multiple card keys for multi-quantity orders.
+    - 📧 **Default Email**: Users can set a default email in profile for delivery notifications.
     - 🔒 **Stock Reservation**: 5-minute hold after entering checkout to prevent oversell.
     - ⏱️ **Auto-Cancel**: Unpaid orders are cancelled after 5 minutes and stock is released.
-    - 🧾 **Order Center**: Order list and details pages.
+    - 🧾 **Order Center**: Order list and details pages; order records show product variant label when applicable.
     - 🔔 **Pending Order Alert**: Homepage banner reminds users of unpaid orders.
     - 🔄 **Refund Requests**: Users can submit refund requests for admin review.
     - ✅ **Auto Refund**: Auto-trigger refunds after approval with error handling.
@@ -52,21 +56,23 @@ This architecture aims to combine the development efficiency of Next.js with the
 - **Admin Console**:
     - 📊 **Sales Stats**: Today/week/month/total overview.
     - ⚠️ **Low Stock Alerts**: Configurable threshold and warnings.
-    - 🧩 **Product Management**: Create/edit, enable/disable, reorder, purchase limits.
+    - 🧩 **Product Management**: Create/edit, enable/disable, reorder, purchase limits; **visibility** (everyone or trust level 0–3); **Variant Group ID** and **Variant Label** for multi-variant products; product and order lists show variant info.
     - 🏷️ **Category Management**: CRUD categories with icons and ordering.
-    - 🗂️ **Card Inventory**: Bulk import and bulk delete unused card keys.
+    - 🗂️ **Card Inventory**: Bulk import and bulk delete unused card keys; each variant is a separate product—manage card keys per product.
     - 💳 **Order Management**: Pagination/search/filters, order detail, mark paid/delivered/cancel.
     - 🧹 **Order Cleanup**: Bulk select and bulk delete.
     - ⭐ **Review Management**: Search and delete reviews.
     - 📦 **Data Management**: Full SQL export (D1 compatible), import from Vercel SQL.
     - 📣 **Announcements**: Homepage announcement management.
     - 👥 **Customer Management**: View customers, manage points, block/unblock.
-    - 📨 **Message Center**: Send inbox messages to all users or specific users, with history.
+    - 📨 **Message Center**: Send inbox messages to all users or specific users, with history; users can contact admin via inbox.
     - ⚙️ **Refund Settings**: Toggle whether refunded card keys return to stock.
-    - 🎨 **Theme & Footer**: Theme color selection and custom footer text.
+    - 🧭 **Navigator Settings**: Opt-in to LDC Navigator; navigator page shows store count.
+    - 🎨 **Store & Theme**: Shop name, **shop description** (SEO), **shop logo / favicon**; **theme color** and **theme font**; custom footer; **noindex** toggle (e.g. for staging).
+    - 📐 **Check-in Settings**: Enable/disable check-in, configurable **check-in reward** points.
     - 🔔 **Update Check**: Admin panel auto-detects new versions.
 - **Points System**:
-    - ✨ **Daily Check-in**: Users earn points by daily check-in.
+    - ✨ **Daily Check-in**: Users earn points by daily check-in (admin can disable or set reward amount).
     - 💰 **Points Discount**: Use points to offset purchase amounts.
     - 🎁 **Points Payment**: If points cover full amount, no payment gateway needed.
 - **I18n & Theme**:
@@ -74,10 +80,21 @@ This architecture aims to combine the development efficiency of Next.js with the
     - 🌓 **Light/Dark/System themes**.
     - ⏱️ **Auto Update**: GitHub Actions workflow for upstream sync.
 - **Notifications**:
-    - 📧 **Delivery Email**: Send order delivery notifications via Resend.
+    - 📧 **Delivery Email**: Send order delivery notifications via Resend (configurable sender, language); users can set default email in profile.
     - 📢 **Telegram Notifications**: New order push notifications via Telegram Bot.
-    - 📮 **Inbox Notifications**: User inbox for delivery/refund/admin messages.
-    - 🌐 **LDC Navigator**: Opt-in store listing and public navigation page.
+    - 📱 **Bark Notifications**: Bark (iOS) push for new orders, refunds, user messages, etc.; can be used alongside Telegram.
+    - 📮 **Inbox Notifications**: User inbox for delivery/refund/admin messages with unread badge; optional **desktop notifications** (browser).
+    - 💬 **Contact Admin**: Users can send messages to admin from profile.
+    - 🌐 **LDC Navigator**: Opt-in store listing and public navigation page with store count.
+
+## 📐 Product Variants (Multi-Variant) Guide
+
+To offer the same product in multiple variants (e.g. monthly / yearly) with different prices and stock:
+
+1. **Admin**: Create **one product per variant** in Product Management (different product IDs), each with its own price, stock, and card keys.
+2. **Link them**: When editing each product, set the same **Variant Group ID** (e.g. `chatgpt`) and a **Variant Label** for that row (e.g. `Monthly`, `Yearly`).
+3. **Storefront**: The homepage will show one combined card with price range and variant count; the detail page shows a variant selector; order records (admin and user) display the variant label.
+4. **Card keys**: Each variant is a separate product; manage card keys per product in Card Inventory.
 
 ## 🚀 One-Click Deploy
 
